@@ -14,6 +14,15 @@ type Server struct {
 	*http.Server
 }
 
+func NewServer(logger Logger, handler http.Handler) *Server {
+	return &Server{
+		Logger: logger,
+		Server: &http.Server{
+			Handler: handler,
+		},
+	}
+}
+
 func (s *Server) Start() error {
 	s.Logger.Printf("Server started")
 
