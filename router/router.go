@@ -70,3 +70,9 @@ func (r *ServeMux) DELETE(path string, handler Handler) {
 func (r *ServeMux) AddRoute(method, path string, handler Handler) {
 	r.Routes = append(r.Routes, Route{Method: method, Path: path, Handler: handler})
 }
+
+type MiddlewareFunc func(next Handler) Handler
+
+func (mux *ServeMux) Use(m ...MiddlewareFunc) {
+	mux.Middlewares = append(mux.Middlewares, m...)
+}
