@@ -5,13 +5,13 @@ import (
 	"net/http"
 )
 
-type CustomContext struct {
+type RouterContext struct {
 	Response Response
 	R        *http.Request
 	Ctx      context.Context
 }
 
-func (c *CustomContext) SetResponse(code int, data any) error {
+func (c *RouterContext) SetResponse(code int, data any) error {
 	c.Response = Response{
 		Status: code,
 		Data:   data,

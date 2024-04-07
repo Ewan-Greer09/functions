@@ -5,16 +5,18 @@ import (
 	"net/http"
 )
 
-type Handler func(c *CustomContext) error
+type HandlerFunc func(c *RouterContext) error
+type MiddlewareFunc func(next HandlerFunc) HandlerFunc
 
-func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	ctx := new(CustomContext)
+func (h HandlerFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	ctx := new(RouterContext)
 	err := h(ctx)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]string{
 			"error": err.Error(),
 		})
+		return
 	}
 
 	w.WriteHeader(ctx.Response.Status)
