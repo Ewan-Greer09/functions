@@ -1,38 +1,49 @@
 package server
 
 import (
+	"context"
+	"fmt"
 	"net/http"
-	"os"
 )
 
-type Logger interface {
-	Printf(format string, v ...interface{})
+type HTTPServer interface {
+	Start() error
 }
+
+type ServerContext struct {
+	Context *context.Context
+	// some other stuff...
+}
+
+type HandlerFunc func(ctx *ServerContext) error
+type MiddlewareFunc func(next HandlerFunc) HandlerFunc
 
 type Server struct {
-	Logger Logger
-	*http.Server
+	Host string
+	Port string
+
+	http.Server
 }
 
-func NewServer(logger Logger, handler http.Handler) *Server {
+func NewServer(host, port string, handler http.Handler) *Server {
 	return &Server{
-		Logger: logger,
-		Server: &http.Server{
+		Server: http.Server{
+			Addr:    fmt.Sprintf("%s:%s", host, port),
 			Handler: handler,
 		},
 	}
 }
 
+// serve HTTP
 func (s *Server) Start() error {
-	s.Logger.Printf("Server started")
+	return s.ListenAndServe()
+}
 
-	if os.Getenv("PORT") == "" {
-		s.Addr = ":8080"
-	}
+// serve HTTPS
+func (s *Server) StartTLS(certFile, keyFile string) error {
+	return s.ListenAndServeTLS(certFile, keyFile)
+}
 
-	if err := s.ListenAndServe(); err != nil {
-		return err
-	}
-
+func (s *Server) Stop(ctx context.Context) error {
 	return nil
 }
