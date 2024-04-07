@@ -52,7 +52,16 @@ func (r *ServeMux) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		handler = r.Middlewares[i](handler)
 	}
 
-	handler.ServeHTTP(w, req)
+	ctx := new(RouterContext)
+	ctx.R = req
+	ctx.Response = Response{Status: 200}
+	err := handler(ctx)
+	if err != nil {
+		ctx.SetResponse(500, err.Error())
+	}
+
+	w.WriteHeader(ctx.Response.Status)
+	w.Write([]byte(ctx.Response.Data.(string)))
 }
 
 func (r *ServeMux) GET(path string, handler HandlerFunc) {
