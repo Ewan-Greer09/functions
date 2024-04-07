@@ -11,9 +11,11 @@ type CustomContext struct {
 	Ctx      context.Context
 }
 
-func (c *CustomContext) SetResponse(code int, data any) {
+func (c *CustomContext) SetResponse(code int, data any) error {
 	c.Response = Response{
 		Status: code,
 		Data:   data,
 	}
+
+	return nil
 }

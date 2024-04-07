@@ -6,7 +6,8 @@ import (
 )
 
 type ServeMux struct {
-	Routes []Route
+	Routes      []Route
+	Middlewares []MiddlewareFunc
 }
 
 func NewRouter() *ServeMux {
@@ -16,7 +17,7 @@ func NewRouter() *ServeMux {
 type Route struct {
 	Path    string
 	Method  string
-	Handler http.Handler
+	Handler Handler
 }
 
 type Response struct {
@@ -24,15 +25,17 @@ type Response struct {
 	Data   interface{}
 }
 
-func (r *ServeMux) getHandler(method, path string) http.Handler {
+func (r *ServeMux) getHandler(method, path string) Handler {
 	for _, route := range r.Routes {
 		re := regexp.MustCompile(route.Path)
 		if route.Method == method && re.MatchString(path) {
 			return route.Handler
 		}
 	}
-	return http.NotFoundHandler()
+	return NotFoundHandler()
 }
+
+func NotFoundHandler() Handler
 
 func (r *ServeMux) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	path := req.URL.Path
@@ -41,6 +44,9 @@ func (r *ServeMux) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	handler := r.getHandler(method, path)
 
 	// handler middlewares go here
+	for _, m := range r.Middlewares {
+		m(handler)
+	}
 
 	handler.ServeHTTP(w, req)
 }
@@ -61,6 +67,6 @@ func (r *ServeMux) DELETE(path string, handler Handler) {
 	r.AddRoute("DELETE", path, handler)
 }
 
-func (r *ServeMux) AddRoute(method, path string, handler http.Handler) {
+func (r *ServeMux) AddRoute(method, path string, handler Handler) {
 	r.Routes = append(r.Routes, Route{Method: method, Path: path, Handler: handler})
 }
