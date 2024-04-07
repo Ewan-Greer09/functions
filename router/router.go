@@ -35,7 +35,11 @@ func (r *ServeMux) getHandler(method, path string) Handler {
 	return NotFoundHandler()
 }
 
-func NotFoundHandler() Handler
+func NotFoundHandler() Handler {
+	return func(ctx *CustomContext) error {
+		return ctx.SetResponse(404, "Not Found")
+	}
+}
 
 func (r *ServeMux) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	path := req.URL.Path
