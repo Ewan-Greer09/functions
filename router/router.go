@@ -47,9 +47,9 @@ func (r *ServeMux) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 	handler := r.getHandler(method, path)
 
-	// handler middlewares go here
-	for _, m := range r.Middlewares {
-		handler = m(handler)
+	// Wrap the handler with all middlewares
+	for i := len(r.Middlewares) - 1; i >= 0; i-- {
+		handler = r.Middlewares[i](handler)
 	}
 
 	handler.ServeHTTP(w, req)
